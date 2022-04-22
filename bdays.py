@@ -2,6 +2,12 @@
 import pandas
 import datetime as dt
 import random
+import smtplib
+
+
+
+my_email = "bigbirthdaybuddyboy@gmail.com"
+password = "9Pythons"
 
 # 1. Update the birthdays.csv
 
@@ -11,19 +17,40 @@ today = (now.month, now.day)
 print(today)
 
 data = pandas.read_csv("birthdays.csv")
-bday_dict = {datarow["name"]:(datarow.month, datarow.day) for (index, datarow) in data.iterrows()}  
+# bday_dict = {datarow["name"]:(datarow.month, datarow.day) for (index, datarow) in data.iterrows()}  
+bday_dict = {(datarow.month, datarow.day): datarow for (index, datarow) in data.iterrows()}  
 # print(bday_dict)
 
 letter_list = ["letter_templates/letter_1.txt", "letter_templates/letter_2.txt", "letter_templates/letter_3.txt"]
 
-for (name, bday) in bday_dict.items():
-    if bday == today:
-        print(name)
-        letter = random.choice(letter_list)
-        with open(letter, 'r') as file :
-            letter_text = file.read()
-        letter_text = letter_text.replace("[NAME]", name)
+if today in bday_dict:
+    person = bday_dict[today]
+    print(person["email"])
+    letter = random.choice(letter_list)
+    with open(letter, 'r') as file :
+        letter_text = file.read().replace("[NAME]", person["name"])
+        # letter_text = letter_text.replace("[NAME]", person["name"])
         print(letter_text)
+    
+    with smtplib.SMTP("smtp.gmail.com") as connection:
+        connection.starttls()
+        connection.login(my_email, password)
+        connection.sendmail(from_addr=my_email, 
+                            to_addrs=person["email"], 
+                            msg=f"Subject: Someone's having a birthday and we both know who\n\n{letter_text}")
+    
+    
+    
+    
+# for (name, bday) in bday_dict.items():
+#     if bday == today:
+#         print(name)
+#         # print(email)
+#         letter = random.choice(letter_list)
+#         with open(letter, 'r') as file :
+#             letter_text = file.read().replace("[NAME]", name)
+#             # letter_text.replace("[NAME]", name)
+#             print(letter_text)
 
 
 
